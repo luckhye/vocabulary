@@ -182,7 +182,7 @@ function renderWord(c) {
   }
   const say = document.getElementById("say"); if (say) say.onclick = () => speak(w.w);
 }
-const HARD_IDS = new Set(["V01", "V02", "V05", "V06", "V07", "V08", "V10", "V11", "V12", "V13", "C03", "C04", "C05", "C07", "C09", "C10", "C13"]);
+const HARD_IDS = new Set(["V04", "V05", "V06", "V09", "V10", "V11", "V13", "V14", "V16", "V17", "V18", "V19", "C03", "C04", "C05", "C07", "C09", "C10", "C13"]);
 
 /* ---------- actions ---------- */
 function reveal() {

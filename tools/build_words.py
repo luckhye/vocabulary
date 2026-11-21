@@ -41,16 +41,25 @@ V = {"IY": "i", "IH": "ɪ", "EY": "eɪ", "EH": "ɛ", "AE": "æ", "UW": "u", "UH"
 C = {"P": "p", "B": "b", "M": "m", "W": "w", "F": "f", "V": "v", "TH": "θ", "DH": "ð",
      "T": "t", "D": "d", "N": "n", "S": "s", "Z": "z", "L": "l", "SH": "ʃ", "ZH": "ʒ",
      "CH": "tʃ", "JH": "dʒ", "R": "r", "Y": "j", "K": "k", "G": "ɡ", "NG": "ŋ", "HH": "h"}
-SID = {"i": "V01", "ɪ": "V02", "eɪ": "V03", "ɛ": "V04", "æ": "V05", "ʌ": "V06", "ə": "V07",
-       "ɝ": "V08", "ɚ": "V08", "u": "V09", "ʊ": "V10", "oʊ": "V11", "ɔ": "V12", "ɑ": "V13",
-       "aɪ": "V14", "aʊ": "V15", "ɔɪ": "V16",
+# General Australian English sound cards (spec section 17)
+SID = {"iː": "V01", "ɪ": "V02", "e": "V03", "æ": "V04", "ɐ": "V05", "ɐː": "V06", "ɔ": "V07",
+       "ʊ": "V08", "ʉː": "V09", "ɜː": "V10", "ə": "V11", "oː": "V12", "æɪ": "V13", "ɑe": "V14",
+       "oɪ": "V15", "æɔ": "V16", "əʉ": "V17", "ɪə": "V18", "eː": "V19", "ʊə": "V20",
        "p": "C01", "b": "C01", "m": "C02", "w": "C03", "f": "C04", "v": "C04", "θ": "C05",
        "ð": "C05", "t": "C06", "d": "C06", "ɾ": "C07", "n": "C08", "s": "C09", "z": "C09",
        "l": "C10", "ʃ": "C11", "ʒ": "C11", "tʃ": "C12", "dʒ": "C12", "r": "C13", "j": "C14",
        "k": "C15", "ɡ": "C15", "ŋ": "C16", "h": "C17"}
-HARD = {"V01", "V02", "V05", "V06", "V07", "V08", "V10", "V11", "V12", "V13",
+HARD = {"V04", "V05", "V06", "V09", "V10", "V11", "V13", "V14", "V16", "V17", "V18", "V19",
         "C03", "C04", "C05", "C07", "C09", "C10", "C13"}
-CLUSTERS = """p l|b l|k l|ɡ l|f l|s l|p r|b r|t r|d r|k r|ɡ r|f r|θ r|ʃ r|t w|d w|k w|ɡ w|s w|θ w|s p|s t|s k|s m|s n|s p l|s p r|s t r|s k r|s k w|p j|b j|k j|m j|f j|v j|h j|n j|s k j"""
+# TRAP-BATH: ɐː before f, θ, s ... except these
+BATH_NOT = {"gas", "mass", "math", "maths", "classic", "classical", "passage", "passenger", "plastic",
+            "athlete", "asset", "massive", "pasta", "fascinating", "fashion", "assassin", "ass", "hassle",
+            "tassel", "passion", "classy", "jasmine", "aspect", "aspirin", "asterisk", "rascal"}
+BATH_ALSO = {"can't", "aunt", "banana", "tomato", "shan't", "vase", "example", "sample"}
+LOT_BEFORE_R = {"orange", "forest", "foreign", "horrible", "horror", "quarrel", "warrant", "origin",
+                "coral", "moral", "corridor", "majority", "minority", "priority", "authority", "historic"}
+THOUGHT_NOT = {"because"}
+CLUSTERS = """p l|b l|k l|ɡ l|f l|s l|p r|b r|t r|d r|k r|ɡ r|f r|θ r|ʃ r|t w|d w|k w|ɡ w|s w|θ w|s p|s t|s k|s m|s n|s p l|s p r|s t r|s k r|s k w|p j|b j|k j|m j|f j|v j|h j|n j|s k j|t j|d j|s t j"""
 ONSETS = {tuple(x.split()) for x in CLUSTERS.split("|")}
 ONSETS |= {(c,) for c in ["p", "b", "t", "d", "k", "ɡ", "f", "v", "θ", "ð", "s", "z", "ʃ", "ʒ",
                           "h", "tʃ", "dʒ", "m", "n", "l", "r", "w", "j"]}
@@ -73,33 +82,103 @@ def isv(p):
     return re.sub(r"\d", "", p) in V or p[:2] in ("AH", "ER")
 
 
-def convert(ph):
-    """-> list of dicts {s: ipa, v: is_vowel, st: '1'|'2'|'0'|''}"""
-    seg = []
+def convert(ph, word=""):
+    """CMUdict (American) -> General Australian. -> list of {s, v, st, dropped_r}"""
+    w = word.lower()
+    seg, dropped = [], False
+    has_o = "o" in w
+    thought_spelling = any(x in w for x in ("au", "aw", "al", "ough", "oa", "war", "quar")) or (
+        "a" in w and not has_o)
+    nvow = sum(isv(x) for x in ph)
     for i, p in enumerate(ph):
         base, st = re.match(r"([A-Z]+)(\d?)", p).groups()
+        prev = ph[i - 1] if i else None
         nxt = ph[i + 1] if i + 1 < len(ph) else None
         r_follows = nxt == "R" and (i + 2 >= len(ph) or not isv(ph[i + 2]))
-        if base == "AH":
-            s = "ʌ" if st in ("1", "2") else "ə"
+        r_any = nxt == "R"
+        stressed = st in ("1", "2")
+        last = i == len(ph) - 1
+        out = None
+        if base == "R":
+            if not (nxt and isv(nxt)):
+                dropped = True
+                continue                       # non-rhotic: no r unless a vowel follows
+            out = "r"
         elif base == "ER":
-            s = "ɝ" if st in ("1", "2") else "ɚ"
-        elif base in V:
-            s = V[base]
+            if nxt and isv(nxt):
+                seg.append({"s": "ɐ" if stressed else "ə", "v": True, "st": st})
+                out = "r"
+                seg.append({"s": out, "v": False, "st": ""})
+                continue
+            out = "ɜː" if stressed else "ə"
+            dropped = True
+        elif base == "AH":
+            out = ("ɔ" if prev == "W" and w.startswith("wa") or w.startswith("wha") else "ɐ") if stressed else "ə"
+        elif base == "IY":
+            out = "ɪə" if r_follows else "iː"
+        elif base == "IH":
             if r_follows:
-                s = {"i": "ɪ", "eɪ": "ɛ", "u": "ʊ"}.get(s, s)
+                out = "ɪə"
+            elif st == "0" and nvow > 1 and nxt != "NG" and not last:
+                out = "ə"
+            else:
+                out = "ɪ"
+        elif base == "EH":
+            out = "eː" if r_follows else "e"
+        elif base == "EY":
+            out = "eː" if r_follows else ("ɐː" if stressed and w in BATH_ALSO else "æɪ")
+        elif base == "AE":
+            bath = stressed and w not in BATH_NOT and (
+                w in BATH_ALSO or (nxt in ("F", "TH", "S") and not (i + 2 < len(ph) and isv(ph[i + 2]) and nxt == "S" and w.endswith("ic"))))
+            out = "ɐː" if bath else "æ"
+        elif base == "AA":
+            if r_any and (r_follows or not has_o):
+                out = "ɐː"
+            elif prev == "W" or has_o:
+                out = "ɔ"
+            else:
+                out = "ɐː"
+        elif base == "AO":
+            if r_any and w not in LOT_BEFORE_R:
+                out = "oː"
+            elif w in THOUGHT_NOT or w in LOT_BEFORE_R:
+                out = "ɔ"
+            elif thought_spelling:
+                out = "oː"
+            else:
+                out = "ɔ"
+        elif base == "UW":
+            if r_follows:
+                out = "ʊə"
+            else:
+                out = "ʉː"
+                yod = prev in ("T", "D", "N") and stressed and (
+                    "ew" in w or "eu" in w or re.search(r"[tdn]u", w)) and not ("oo" in w or "ou" in w)
+                if yod and not (seg and seg[-1]["s"] == "j"):
+                    seg.append({"s": "j", "v": False, "st": ""})
+        elif base == "UH":
+            out = "oː" if r_follows else "ʊ"
+        elif base == "OW":
+            out = "oː" if r_follows else "əʉ"
+        elif base == "AY":
+            out = "ɑe"
+        elif base == "AW":
+            out = "æɔ"
+        elif base == "OY":
+            out = "oɪ"
         else:
-            s = C[base]
+            out = C[base]
             if base in ("T", "D") and 0 < i < len(ph) - 1:
-                prev = ph[i - 1]
                 prev_ok = isv(prev) or (prev == "R" and i >= 2 and isv(ph[i - 2]))
                 nxt_unstressed = isv(nxt) and nxt[-1] == "0"
-                button = base == "T" and nxt == "AH0" and i + 2 < len(ph) and ph[i + 2] == "N"
+                button = base in ("T", "D") and nxt == "AH0" and i + 2 < len(ph) and ph[i + 2] == "N"
                 if prev_ok and nxt_unstressed and not button:
-                    s = "ɾ"
-        alt = "ɑ" if base == "AO" and not r_follows else None
-        seg.append({"s": s, "v": isv(p), "st": st if isv(p) else "", "alt": alt})
-    return seg
+                    out = "ɾ"
+        seg.append({"s": out, "v": isv(p), "st": st if isv(p) else ""})
+    seg_dropped_r = dropped and "r" in w
+    for x in seg:
+        x["alt"] = None
+    return seg, seg_dropped_r
 
 
 def stress_positions(seg):
@@ -124,7 +203,7 @@ def stress_positions(seg):
 
 
 def build(word, ph):
-    seg = convert(ph)
+    seg, dropped_r = convert(ph, word)
     marks = stress_positions(seg)
     parts, alt_parts = [], []
     for i, x in enumerate(seg):
@@ -145,7 +224,9 @@ def build(word, ph):
     if not last["v"] and last["s"] not in ("m", "n", "ŋ", "l", "r"):
         warn.append(f"끝 {last['s']} 뒤에 '으'를 붙이지 않기")
     if "ɾ" in ipa:
-        warn.append("t를 혀로 한 번 톡 치는 미국식 t")
+        warn.append("모음 사이 t는 혀로 한 번 톡")
+    if dropped_r:
+        warn.append("모음 뒤 철자 r은 소리 내지 않기")
     return {"w": word, "ipa": ipa, "alt": alt if alt != ipa else None, "seg": parts,
             "sounds": sounds, "hard": [s for s in sounds if s in HARD], "warn": warn}
 
