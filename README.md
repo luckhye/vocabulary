@@ -21,6 +21,9 @@
 SUBTLEX-US 기본형 순위 1~642위에서 욕설, 감탄사(uh, um, huh 등), 이름(jack, sam), 중복을 뺀 625개.
 발음은 호주 표준 발음(General Australian). CMUdict(미국식)를 규칙으로 호주식으로 바꾼다: 모음 뒤 r 안 읽음, 모음 20개(iː ɪ e æ ɐ ɐː ɔ ʊ ʉː ɜː ə oː æɪ ɑe oɪ æɔ əʉ ɪə eː ʊə), after·last 같은 단어는 ɐː, news·student는 j 넣음, 모음 사이 t는 ɾ. 단어 음성은 아이폰 호주 음성(en-AU). 그림은 아직 이모지(127개)뿐이고, 나머지는 소리 듣고 말하기 카드.
 
+## 미국식 버전
+`us/` 폴더에 미국식 발음 버전(2026-11-22 호주식 전환 직전 상태, 음성 en-US)을 따로 둔다. 주소: `https://luckhye.github.io/vocabulary/us/`. 기록(Don't know 목록)은 호주식과 따로 저장된다.
+
 ## 설치
 1. GitHub 저장소 Settings → Pages → Branch `main` / root 저장.
 2. 아이폰 사파리에서 `https://<계정>.github.io/<저장소>/` 열기 → 공유 → 홈 화면에 추가.
