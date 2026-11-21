@@ -167,12 +167,13 @@ function renderSound(c) {
 
 function renderWord(c) {
   const w = BYN[c.n];
-  const top = `<div class="cardtop"><span><span class="id">${w.n}</span> · ${c.review ? "Review" : "New"}</span><span class="kind">${w.f ? esc(w.f) + " · " : ""}${w.emo ? "Picture → word" : "Audio → word"}</span></div>`;
-  const front = w.emo
-    ? `<div class="pic"><span class="emo" aria-hidden="true">${w.emo}</span></div><div class="prompt">What is this? Say the word out loud.</div>`
+  const top = `<div class="cardtop"><span><span class="id">${w.n}</span> · ${c.review ? "Review" : "New"}</span><span class="kind">${w.f ? esc(w.f) + " · " : ""}${w.emo && !c.review ? "Picture + sound → word" : "Sound → word"}</span></div>`;
+  // New: picture + sound to link sound and meaning. Review: sound only (listening check), picture moves to the back.
+  const front = w.emo && !c.review
+    ? `<div class="pic"><span class="emo" aria-hidden="true">${w.emo}</span><button class="btn primary play" type="button" id="say">▶ Listen</button></div><div class="prompt">Look, listen, then say the word yourself.</div>`
     : `<div class="pic"><button class="btn primary play big" type="button" id="say">▶ Listen</button></div><div class="prompt">Listen, then say the word yourself.</div>`;
   const firstHard = w.hard.find(id => soundEntry(id)) || w.sounds.find(id => soundEntry(id));
-  const back = `<div class="word">${esc(w.w)}</div><div class="ipa">/${ipaHtml(w)}/${w.alt ? `<small>also /${esc(w.alt)}/</small>` : ""}</div>${koTable(w)}<div class="mouth"><div class="pick">Mouth: ${
+  const back = `${w.emo && c.review ? `<div class="emo backemo" aria-hidden="true">${w.emo}</div>` : ""}<div class="word">${esc(w.w)}</div><div class="ipa">/${ipaHtml(w)}/${w.alt ? `<small>also /${esc(w.alt)}/</small>` : ""}</div>${koTable(w)}<div class="mouth"><div class="pick">Mouth: ${
     w.sounds.filter(id => soundEntry(id)).map(id => `<button type="button" data-s="${id}" aria-pressed="${id === firstHard}">${esc(SOUND[id])}</button>`).join("")}</div><div id="mouthBack"></div></div>${
     w.warn.length ? `<div class="warn">${w.warn.map(x => `<div>${esc(x)}</div>`).join("")}</div>` : ""}<button class="btn play" type="button" id="say">▶ Hear again</button>`;
   ph.innerHTML = top + (flipped && backSide ? back : front) + `<div class="spacer"></div>` + (flipped
