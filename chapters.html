@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Sound Deck">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#eef1f4">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Sound Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=Noto+Serif:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* Sound Deck web app */
+:root{
+  --bg:#eef1f4; --surface:#ffffff; --ink:#17202b; --muted:#5a6573; --line:#d9dfe6;
+  --accent:#1b6c86; --accent-soft:#e2f0f4;
+  --vowel:#b4461f; --vowel-soft:#fbe9e1; --cons:#2d5fb8; --cons-soft:#e4ecfa;
+  --again:#b3261e; --hard:#9a6a12; --good:#1d7a45; --easy:#1b6c86;
+  --font-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --font-word:"Noto Serif","Charis SIL","Times New Roman",serif;
+  --font-ipa:var(--font-word);
+  --skin:#f6e1d5; --cavity:#4a2f33;
+  --lip:#e9b9a6; --flow:#1b6c86; --pin:#d9480f; --stage:#f7f8fa;
+  --tongue:#e59aa5; --tongue-line:#b65766; --tissue:#f4dccd; --tissue-line:#8b6a5c; --tooth:#ffffff;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#10151b; --surface:#19212a; --ink:#e6ebf0; --muted:#9aa6b2; --line:#2b3541;
+    --accent:#5fb6d1; --accent-soft:#163240;
+    --vowel:#f08a62; --vowel-soft:#3a2219; --cons:#83a8f0; --cons-soft:#1c2a45;
+    --again:#f2867f; --hard:#e7b75a; --good:#6fd39a; --easy:#5fb6d1;
+      --skin:#3b2d29; --cavity:#1a0f12;
+      --lip:#7a4b45; --flow:#5fb6d1; --pin:#ff8a4c; --stage:#141b22;
+    --tongue:#c9707d; --tongue-line:#f0a3ae; --tissue:#3a2c27; --tissue-line:#c79f8c; --tooth:#e9edf1;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10151b; --surface:#19212a; --ink:#e6ebf0; --muted:#9aa6b2; --line:#2b3541;
+  --accent:#5fb6d1; --accent-soft:#163240;
+  --vowel:#f08a62; --vowel-soft:#3a2219; --cons:#83a8f0; --cons-soft:#1c2a45;
+  --again:#f2867f; --hard:#e7b75a; --good:#6fd39a; --easy:#5fb6d1;
+      --skin:#3b2d29; --cavity:#1a0f12;
+      --lip:#7a4b45; --flow:#5fb6d1; --pin:#ff8a4c; --stage:#141b22;
+    --tongue:#c9707d; --tongue-line:#f0a3ae; --tissue:#3a2c27; --tissue-line:#c79f8c; --tooth:#e9edf1;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.55}
+.wrap{max-width:760px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+header h1{font-size:24px;margin:0}
+a.back{color:var(--accent);text-decoration:none;font-weight:500}
+.sub{color:var(--muted);font-size:13.5px;margin:0 0 14px}
+h2{font-size:14px;color:var(--muted);font-weight:500;margin:22px 0 8px}
+.ch{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:8px;overflow:hidden}
+.ch.today{border:2px solid var(--accent)}
+.ch.past .num{color:var(--muted)}
+.ch summary{list-style:none;display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;align-items:center;padding:12px 14px;cursor:pointer}
+.ch summary::-webkit-details-marker{display:none}
+.num{font-weight:700;font-size:17px;white-space:nowrap}
+.meta{font-size:13px;color:var(--muted)}
+.peek{grid-column:1/-1;font-family:var(--font-word);font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tag{font-size:12px;font-weight:500;border-radius:999px;padding:1px 9px;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+.body{border-top:1px solid var(--line);padding:10px 14px 14px}
+.study{display:block;text-align:center;background:var(--ink);color:var(--bg);text-decoration:none;border-radius:10px;padding:10px;font-weight:500;margin-bottom:10px}
+ol.words{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:4px 14px}
+ol.words li{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:baseline;padding:5px 0;border-bottom:1px dashed var(--line)}
+.n{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:3.2em}
+.w{font-family:var(--font-word);font-weight:700;font-size:16px}
+.w small{display:block;font-weight:400;font-size:13px;color:var(--muted)}
+.f{font-size:11px;color:var(--muted)}
+button.say{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;width:30px;height:30px;cursor:pointer}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>Chapters</h1><a class="back" href="./">Back to today</a></header>
+<p class="sub">One chapter = one day. Tap a chapter to see its words. "Study" opens it as a preview (nothing is saved).</p>
+<div id="list"></div>
+</div>
+<script src="words-a.js"></script>
+<script src="words-b.js"></script>
+<script src="words-c.js"></script>
+<script>
+"use strict";
+const START = new Date(2026, 10, 22, 4, 0, 0), DAYMS = 86400000;
+const WORDS = [...(window.PACK_A||[]), ...(window.PACK_B||[]), ...(window.PACK_C||[])];
+const today = Math.floor((Date.now() - START) / DAYMS);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = d => new Date(START.getTime() + d * DAYMS).toLocaleDateString("en-US", {weekday:"short", month:"short", day:"numeric"});
+const byDay = {};
+WORDS.forEach(w => (byDay[w.d] = byDay[w.d] || []).push(w));
+const days = Object.keys(byDay).map(Number).sort((a, b) => a - b);
+const PART = d => d < 13 ? "Part 1 · Basic 625" : d < 88 ? "Part 2 · Basic 626–3,000 + field words" : "Part 3 · Field words";
+let html = "", part = "";
+for (const d of days) {
+  const ws = byDay[d];
+  if (PART(d) !== part) { part = PART(d); html += `<h2>${part}</h2>`; }
+  const a = ws.filter(w => !w.f).length, c = ws.length - a;
+  const cls = d === today ? " today" : d < today ? " past" : "";
+  html += `<details class="ch${cls}" id="ch${d + 1}" data-d="${d}"><summary>
+    <span class="num">Chapter ${d + 1}</span><span class="meta">${fmt(d)} · ${ws.length} words${c && a ? ` (${a} basic + ${c} field)` : ""}</span>
+    ${d === today ? `<span class="tag">Today</span>` : `<span></span>`}
+    <span class="peek">${ws.slice(0, 8).map(w => esc(w.w)).join(" · ")} …</span></summary><div class="body"></div></details>`;
+}
+const list = document.getElementById("list");
+list.innerHTML = html;
+// fill a chapter's words when it is opened
+list.addEventListener("toggle", e => {
+  const el = e.target; if (!el.open || el.dataset.done) return;
+  const d = +el.dataset.d; el.dataset.done = 1;
+  el.querySelector(".body").innerHTML = `<a class="study" href="./?day=${d + 1}">Study Chapter ${d + 1}</a><ol class="words">${
+    byDay[d].map(w => `<li><span class="n">${esc(w.n)}</span><span class="w">${esc(w.w)}<small>/${esc(w.ipa)}/${w.f ? ` <span class="f">${esc(w.f)}</span>` : ""}</small></span><button class="say" type="button" data-w="${esc(w.w)}" aria-label="Listen to ${esc(w.w)}">▶</button></li>`).join("")}</ol>`;
+}, true);
+// word sound: Australian voice
+function voice() { try { const vs = speechSynthesis.getVoices(); return vs.find(v => v.lang === "en-AU" && /Karen|Lee/.test(v.name)) || vs.find(v => v.lang.replace("_", "-") === "en-AU") || null; } catch (e) { return null; } }
+list.addEventListener("click", e => {
+  const b = e.target.closest("button.say"); if (!b) return;
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(b.dataset.w); u.lang = "en-AU"; const v = voice(); if (v) u.voice = v; u.rate = 0.9; speechSynthesis.speak(u); } catch (err) {}
+});
+// open and jump to today's chapter (or the one in #chN)
+const target = document.getElementById(location.hash.slice(1)) || document.getElementById("ch" + (Math.max(0, today) + 1));
+if (target) { target.open = true; target.scrollIntoView({block: "start"}); }
+</script>
+</body>
+</html>

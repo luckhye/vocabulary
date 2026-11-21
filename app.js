@@ -145,7 +145,7 @@ function render() {
   if (!c) {
     const tomorrow = WORDS.filter(w => learnDay(w) < today + 1 && INTERVALS.includes(today + 1 - base(w))).length;
     const newT = WORDS.filter(w => learnDay(w) === today + 1).length;
-    ph.innerHTML = `<div class="done"><b>Done for today</b>Tomorrow: ${tomorrow} reviews${newT ? ` and ${newT} new words` : ""}.${PREVIEW ? `<br><br><a class="btn" href="?day=${today + 2}">Preview Day ${today + 2}</a>` : ""}</div>`;
+    ph.innerHTML = `<div class="done"><b>Done for today</b>Tomorrow: ${tomorrow} reviews${newT ? ` and ${newT} new words` : ""}.${PREVIEW ? `<br><br><a class="btn" href="?day=${today + 2}">Preview Day ${today + 2}</a> <a class="btn" href="chapters.html#ch${today + 1}">All chapters</a>` : ""}</div>`;
     return;
   }
   if (c.sound) return renderSound(c);
