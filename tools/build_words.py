@@ -266,7 +266,7 @@ def write(path, name, desc, words):
         f.write(";\n")
 
 
-B_START, B_PER_DAY, C_PER_DAY = 13, 30, 20     # day index 13 = 2026-12-06 (day 14)
+B_START, B_PER_DAY, C_PER_DAY = 13, 30, 20     # day index 13 = 2026-12-05 (day 14)
 FIELDS = [("travel", "TRV", "Travel", 500), ("life", "AU", "Australia", 500), ("news", "NEWS", "News", 733),
           ("stocks", "ECO", "Money", 600), ("korea", "KR", "K-trend", 549)]
 

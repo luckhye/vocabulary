@@ -3,7 +3,7 @@
  * Reviews fall on base day + 1, 3, 7, 14, 30, 60. base = learned day, or the
  * day it was last marked "Don't know" (the only thing that is saved). */
 "use strict";
-const START = new Date(2026, 10, 23, 4, 0, 0);   // Mon 2026-11-23, day starts 04:00 local
+const START = new Date(2026, 10, 22, 4, 0, 0);   // Sun 2026-11-22, day starts 04:00 local
 const PER_DAY = 50;   // pack A; packs B (30) and C (20) carry their own day in w.d
 const INTERVALS = [1, 3, 7, 14, 30, 60];
 const DAYMS = 86400000;
@@ -23,7 +23,7 @@ const params = new URLSearchParams(location.search);
 const PREVIEW = params.has("day");
 let today = PREVIEW ? Math.max(0, (+params.get("day") || 1) - 1) : Math.floor((Date.now() - START) / DAYMS);
 
-// One-time wipe of test runs before the real start (2026-11-23). Keeps the sheet link.
+// One-time wipe of test runs before the real start (2026-11-22). Keeps the sheet link.
 const K_RESET = "sd-reset-v1";
 if (!PREVIEW && store.get(K_RESET, null) == null) {
   try { localStorage.removeItem(K_MISSED); localStorage.removeItem(K_PROG); } catch (e) {}
