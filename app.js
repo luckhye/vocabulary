@@ -4,14 +4,14 @@
  * day it was last marked "Don't know" (the only thing that is saved). */
 "use strict";
 const START = new Date(2026, 10, 23, 4, 0, 0);   // Mon 2026-11-23, day starts 04:00 local
-const PER_DAY = 50;
+const PER_DAY = 50;   // pack A; packs B (30) and C (20) carry their own day in w.d
 const INTERVALS = [1, 3, 7, 14, 30, 60];
 const DAYMS = 86400000;
 const K_MISSED = "sd-missed-v1", K_PROG = "sd-progress-v1", K_SHEET = "sd-sheet-url";
 
-const WORDS = window.PACK_A || [];
+const WORDS = [...(window.PACK_A || []), ...(window.PACK_B || []), ...(window.PACK_C || [])];
 const BYN = Object.fromEntries(WORDS.map(w => [w.n, w]));
-const learnDay = w => Math.floor((+w.n - 1) / PER_DAY);
+const learnDay = w => w.d;
 
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -111,7 +111,7 @@ function header() {
 function render() {
   header();
   if (today < 0) {
-    ph.innerHTML = `<div class="done"><b>Starts ${fmtDay(0)}</b>${PER_DAY} new words a day, then reviews on day 1, 3, 7, 14, 30 and 60.<br><br><a class="btn" href="?day=1">Preview Day 1</a></div>`;
+    ph.innerHTML = `<div class="done"><b>Starts ${fmtDay(0)}</b>50 new words a day, then reviews on day 1, 3, 7, 14, 30 and 60.<br><br><a class="btn" href="?day=1">Preview Day 1</a></div>`;
     return;
   }
   const c = queue[0];
@@ -140,7 +140,7 @@ function renderSound(c) {
 
 function renderWord(c) {
   const w = BYN[c.n];
-  const top = `<div class="cardtop"><span><span class="id">${w.n}</span> · ${c.review ? "Review" : "New"}</span><span class="kind">${w.emo ? "Picture → word" : "Audio → word"}</span></div>`;
+  const top = `<div class="cardtop"><span><span class="id">${w.n}</span> · ${c.review ? "Review" : "New"}</span><span class="kind">${w.f ? esc(w.f) + " · " : ""}${w.emo ? "Picture → word" : "Audio → word"}</span></div>`;
   const front = w.emo
     ? `<div class="pic"><span class="emo" aria-hidden="true">${w.emo}</span></div><div class="prompt">What is this? Say the word out loud.</div>`
     : `<div class="pic"><button class="btn primary play big" type="button" id="say">▶ Listen</button></div><div class="prompt">Listen, then say the word yourself.</div>`;
