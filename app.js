@@ -96,7 +96,18 @@ function dateStr(d) { const t = new Date(START.getTime() + d * DAYMS); return `$
 function setSync(t) { const el = document.getElementById("syncState"); if (el) el.textContent = t; }
 
 /* ---------- speech ---------- */
-function speak(text) { try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = "en-US"; u.rate = 0.85; speechSynthesis.speak(u); } catch (e) {} }
+// Word audio in an Australian voice when the phone has one (iPhone: Karen, Lee), else any English voice
+const ACCENT = "en-AU";
+function pickVoice() {
+  try {
+    const vs = speechSynthesis.getVoices();
+    return vs.find(v => v.lang === ACCENT && /Karen|Lee/.test(v.name)) || vs.find(v => v.lang === ACCENT)
+      || vs.find(v => v.lang.replace("_", "-") === ACCENT) || null;
+  } catch (e) { return null; }
+}
+let VOICE = null;
+try { VOICE = pickVoice(); speechSynthesis.onvoiceschanged = () => { VOICE = pickVoice(); }; } catch (e) {}
+function speak(text) { try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = ACCENT; if (VOICE) u.voice = VOICE; u.rate = 0.85; speechSynthesis.speak(u); } catch (e) {} }
 
 /* ---------- render ---------- */
 let flipped = false, backSide = false;
