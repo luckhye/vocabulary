@@ -23,6 +23,12 @@ const params = new URLSearchParams(location.search);
 const PREVIEW = params.has("day");
 let today = PREVIEW ? Math.max(0, (+params.get("day") || 1) - 1) : Math.floor((Date.now() - START) / DAYMS);
 
+// One-time wipe of test runs before the real start (2026-11-23). Keeps the sheet link.
+const K_RESET = "sd-reset-v1";
+if (!PREVIEW && store.get(K_RESET, null) == null) {
+  try { localStorage.removeItem(K_MISSED); localStorage.removeItem(K_PROG); } catch (e) {}
+  store.set(K_RESET, Date.now());
+}
 let missed = store.get(K_MISSED, {});          // { "037": dayIndex }
 const base = w => (missed[w.n] != null ? missed[w.n] : learnDay(w));
 
@@ -238,6 +244,12 @@ document.getElementById("sheetUrl").onchange = e => { store.set(K_SHEET, e.targe
 document.getElementById("syncNow").onclick = async () => {
   store.set(K_SHEET, document.getElementById("sheetUrl").value.trim());
   setSync("Syncing…"); if (await pullSheet()) { rebuild(); render(); }
+};
+
+document.getElementById("resetAll").onclick = () => {
+  if (!confirm("Clear all progress on this phone? (Rows in the Google Sheet stay — delete them there too.)")) return;
+  try { localStorage.removeItem(K_MISSED); localStorage.removeItem(K_PROG); } catch (e) {}
+  location.reload();
 };
 
 // a new day while the app stays open
