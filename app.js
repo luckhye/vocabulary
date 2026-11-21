@@ -32,16 +32,26 @@ function fmtDay(d) {
 }
 
 /* ---------- today's queue ---------- */
+// New sound cards: at most SOUNDS_PER_DAY a day, each right before the first
+// word of that day that uses it. Worked out from the word list alone.
+const SOUNDS_PER_DAY = 8;
+const SOUND_PLAN = (() => {
+  const plan = {}, perDay = {};
+  [...WORDS].sort((a, b) => a.d - b.d).forEach(w => w.sounds.forEach(s => {
+    if (plan[s] || (perDay[w.d] || 0) >= SOUNDS_PER_DAY) return;
+    plan[s] = { day: w.d, before: w.n }; perDay[w.d] = (perDay[w.d] || 0) + 1;
+  }));
+  return plan;
+})();
+
 function buildQueue() {
-  const known = new Set();
-  WORDS.forEach(w => { if (learnDay(w) < today) w.sounds.forEach(s => known.add(s)); });
   const reviews = WORDS.filter(w => learnDay(w) < today && INTERVALS.includes(today - base(w)));
   // a word missed earlier today comes back too
   WORDS.forEach(w => { if (missed[w.n] === today && learnDay(w) < today && !reviews.includes(w)) reviews.push(w); });
   const fresh = WORDS.filter(w => learnDay(w) === today);
   const q = reviews.map(w => ({ id: "w:" + w.n, n: w.n, review: true }));
   fresh.forEach(w => {
-    w.sounds.forEach(s => { if (!known.has(s)) { known.add(s); q.push({ id: "s:" + s, sound: s, before: w.n }); } });
+    w.sounds.forEach(s => { const p = SOUND_PLAN[s]; if (p && p.day === today && p.before === w.n) q.push({ id: "s:" + s, sound: s, before: w.n }); });
     q.push({ id: "w:" + w.n, n: w.n, review: false });
   });
   return q;
